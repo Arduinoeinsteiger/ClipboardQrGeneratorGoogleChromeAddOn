@@ -12,8 +12,7 @@
     }
   },
   "permissions": [
-    "clipboardRead",
-    "clipboardWrite"
+    "clipboard"
   ],
   "background": {
     "service_worker": "background.js"

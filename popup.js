@@ -13,20 +13,28 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to read from clipboard
   async function readClipboard() {
     try {
-      const text = await navigator.clipboard.readText();
+      // Request clipboard permission explicitly
+      const permissionStatus = await navigator.permissions.query({name: 'clipboard-read'});
       
-      if (text) {
-        clipboardContentElement.textContent = text.length > 100 
-          ? text.substring(0, 100) + '...' 
-          : text;
+      if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
+        const text = await navigator.clipboard.readText();
         
-        // Store the full text in a data attribute for QR generation
-        clipboardContentElement.dataset.fullText = text;
-        
-        showStatus('Clipboard content loaded successfully.', 'success');
+        if (text) {
+          clipboardContentElement.textContent = text.length > 100 
+            ? text.substring(0, 100) + '...' 
+            : text;
+          
+          // Store the full text in a data attribute for QR generation
+          clipboardContentElement.dataset.fullText = text;
+          
+          showStatus('Clipboard content loaded successfully.', 'success');
+        } else {
+          clipboardContentElement.textContent = 'No text content in clipboard';
+          showStatus('No text content found in clipboard.', 'error');
+        }
       } else {
-        clipboardContentElement.textContent = 'No text content in clipboard';
-        showStatus('No text content found in clipboard.', 'error');
+        clipboardContentElement.textContent = 'Clipboard permission denied';
+        showStatus('Please allow clipboard access in browser settings.', 'error');
       }
     } catch (error) {
       console.error('Failed to read clipboard:', error);
@@ -56,10 +64,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Copy QR code to clipboard
       await copyQrCodeToClipboard(qrCodeImage);
       
-      showStatus('QR code copied to clipboard!', 'success');
+      // Status message will be shown in copyQrCodeToClipboard function
     } catch (error) {
       console.error('Error generating QR code:', error);
-      showStatus('Failed to generate or copy QR code.', 'error');
+      showStatus('Failed to generate QR code: ' + error.message, 'error');
     }
   }
   
@@ -82,41 +90,55 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Function to copy QR code to clipboard
   async function copyQrCodeToClipboard(qrCodeImage) {
-    // Create a canvas and draw the QR code image on it
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    // Wait for the image to load
-    await new Promise((resolve) => {
-      if (qrCodeImage.complete) {
-        resolve();
-      } else {
-        qrCodeImage.onload = resolve;
+    try {
+      // Request clipboard permission explicitly
+      const permissionStatus = await navigator.permissions.query({name: 'clipboard-write'});
+      
+      if (permissionStatus.state !== 'granted' && permissionStatus.state !== 'prompt') {
+        showStatus('Clipboard write permission denied.', 'error');
+        return;
       }
-    });
-    
-    // Set canvas size to match the QR code image
-    canvas.width = qrCodeImage.naturalWidth;
-    canvas.height = qrCodeImage.naturalHeight;
-    
-    // Draw the image on the canvas
-    ctx.drawImage(qrCodeImage, 0, 0);
-    
-    // Get the image data as a blob
-    canvas.toBlob(async (blob) => {
-      try {
-        // Create a ClipboardItem for the image
-        const clipboardItem = new ClipboardItem({
-          'image/png': blob
-        });
-        
-        // Write to clipboard
-        await navigator.clipboard.write([clipboardItem]);
-      } catch (error) {
-        console.error('Failed to copy QR code to clipboard:', error);
-        showStatus('Failed to copy QR code to clipboard.', 'error');
-      }
-    }, 'image/png');
+      
+      // Create a canvas and draw the QR code image on it
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Wait for the image to load
+      await new Promise((resolve) => {
+        if (qrCodeImage.complete) {
+          resolve();
+        } else {
+          qrCodeImage.onload = resolve;
+        }
+      });
+      
+      // Set canvas size to match the QR code image
+      canvas.width = qrCodeImage.naturalWidth;
+      canvas.height = qrCodeImage.naturalHeight;
+      
+      // Draw the image on the canvas
+      ctx.drawImage(qrCodeImage, 0, 0);
+      
+      // Get the image data as a blob
+      canvas.toBlob(async (blob) => {
+        try {
+          // Create a ClipboardItem for the image
+          const clipboardItem = new ClipboardItem({
+            'image/png': blob
+          });
+          
+          // Write to clipboard
+          await navigator.clipboard.write([clipboardItem]);
+          showStatus('QR code copied to clipboard!', 'success');
+        } catch (error) {
+          console.error('Failed to copy QR code to clipboard:', error);
+          showStatus('Failed to copy QR code to clipboard. ' + error.message, 'error');
+        }
+      }, 'image/png');
+    } catch (error) {
+      console.error('Permission error:', error);
+      showStatus('Permission error: ' + error.message, 'error');
+    }
   }
   
   // Function to show status messages
