@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clipboard to QR Code Extension</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #4285f4;
+            margin-bottom: 10px;
+        }
+        .download-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .download-button {
+            display: inline-block;
+            background-color: #4285f4;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        .download-button:hover {
+            background-color: #3367d6;
+        }
+        .installation-steps {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .step-image {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo-128.png" alt="QR Code Extension Logo" class="logo">
+        <h1>Clipboard to QR Code</h1>
+        <p>Chrome-Erweiterung zum Konvertieren von Zwischenablage-Text in QR-Codes</p>
+    </header>
+
+    <div class="download-section">
+        <h2>Download</h2>
+        <p>Laden Sie die Chrome-Erweiterung herunter, um Texte aus Ihrer Zwischenablage schnell in QR-Codes umzuwandeln.</p>
+        <a href="dist/clipboard-to-qr-extension.tar.gz" class="download-button">Erweiterung herunterladen</a>
+    </div>
+
+    <div class="installation-steps">
+        <h2>Installationsanleitung</h2>
+        <ol>
+            <li>Laden Sie die Datei <strong>clipboard-to-qr-extension.tar.gz</strong> herunter</li>
+            <li>Entpacken Sie das Archiv in einen Ordner auf Ihrem Computer</li>
+            <li>Öffnen Sie Google Chrome und navigieren Sie zu <code>chrome://extensions/</code></li>
+            <li>Aktivieren Sie den "Entwicklermodus" in der oberen rechten Ecke</li>
+            <li>Klicken Sie auf "Entpackte Erweiterung laden"</li>
+            <li>Wählen Sie den Ordner aus, in den Sie die Dateien entpackt haben</li>
+            <li>Die Erweiterung sollte nun in Chrome installiert sein und in der Toolbar erscheinen</li>
+        </ol>
+    </div>
+
+    <div class="installation-steps" style="margin-top: 20px;">
+        <h2>Verwendung</h2>
+        <ol>
+            <li>Kopieren Sie einen Text in Ihre Zwischenablage</li>
+            <li>Klicken Sie auf das Erweiterungssymbol in der Chrome-Toolbar</li>
+            <li>Sie sehen den Inhalt Ihrer Zwischenablage im Popup</li>
+            <li>Klicken Sie auf "Get QR"</li>
+            <li>Ein QR-Code wird generiert und automatisch in Ihre Zwischenablage kopiert</li>
+            <li>Sie können diesen QR-Code nun überall einfügen, wo Bilder erlaubt sind (Word, Paint, usw.)</li>
+        </ol>
+    </div>
+</body>
+</html>
