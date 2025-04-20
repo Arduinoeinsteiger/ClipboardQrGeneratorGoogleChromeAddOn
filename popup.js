@@ -10,32 +10,35 @@ document.addEventListener('DOMContentLoaded', function() {
   // Add event listener to the Get QR button
   getQrButton.addEventListener('click', handleGetQr);
   
-  // Function to read from clipboard
+  // Function to read from clipboard (using background.js service worker)
   async function readClipboard() {
     try {
-      // Request clipboard permission explicitly
-      const permissionStatus = await navigator.permissions.query({name: 'clipboard-read'});
-      
-      if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
-        const text = await navigator.clipboard.readText();
-        
-        if (text) {
-          clipboardContentElement.textContent = text.length > 100 
-            ? text.substring(0, 100) + '...' 
-            : text;
+      // Use background script to read clipboard instead of direct access
+      // This solves the "Document is not focused" error
+      chrome.runtime.sendMessage({action: "readClipboard"}, function(response) {
+        if (response && response.success) {
+          const text = response.text;
           
-          // Store the full text in a data attribute for QR generation
-          clipboardContentElement.dataset.fullText = text;
-          
-          showStatus('Clipboard content loaded successfully.', 'success');
+          if (text) {
+            clipboardContentElement.textContent = text.length > 100 
+              ? text.substring(0, 100) + '...' 
+              : text;
+            
+            // Store the full text in a data attribute for QR generation
+            clipboardContentElement.dataset.fullText = text;
+            
+            showStatus('Clipboard content loaded successfully.', 'success');
+          } else {
+            clipboardContentElement.textContent = 'No text content in clipboard';
+            showStatus('No text content found in clipboard.', 'error');
+          }
         } else {
-          clipboardContentElement.textContent = 'No text content in clipboard';
-          showStatus('No text content found in clipboard.', 'error');
+          const errorMsg = response ? response.error : 'Unknown error';
+          console.error('Failed to read clipboard:', errorMsg);
+          clipboardContentElement.textContent = 'Could not access clipboard';
+          showStatus('Failed to access clipboard: ' + errorMsg, 'error');
         }
-      } else {
-        clipboardContentElement.textContent = 'Clipboard permission denied';
-        showStatus('Please allow clipboard access in browser settings.', 'error');
-      }
+      });
     } catch (error) {
       console.error('Failed to read clipboard:', error);
       clipboardContentElement.textContent = 'Could not access clipboard';
@@ -91,14 +94,6 @@ document.addEventListener('DOMContentLoaded', function() {
   // Function to copy QR code to clipboard
   async function copyQrCodeToClipboard(qrCodeImage) {
     try {
-      // Request clipboard permission explicitly
-      const permissionStatus = await navigator.permissions.query({name: 'clipboard-write'});
-      
-      if (permissionStatus.state !== 'granted' && permissionStatus.state !== 'prompt') {
-        showStatus('Clipboard write permission denied.', 'error');
-        return;
-      }
-      
       // Create a canvas and draw the QR code image on it
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -121,23 +116,27 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Get the image data as a blob
       canvas.toBlob(async (blob) => {
-        try {
-          // Create a ClipboardItem for the image
-          const clipboardItem = new ClipboardItem({
-            'image/png': blob
-          });
-          
-          // Write to clipboard
-          await navigator.clipboard.write([clipboardItem]);
-          showStatus('QR code copied to clipboard!', 'success');
-        } catch (error) {
-          console.error('Failed to copy QR code to clipboard:', error);
-          showStatus('Failed to copy QR code to clipboard. ' + error.message, 'error');
-        }
+        // Use background script to write to clipboard
+        // This solves the "Document is not focused" error
+        chrome.runtime.sendMessage(
+          {
+            action: "writeClipboard", 
+            imageBlob: blob
+          }, 
+          function(response) {
+            if (response && response.success) {
+              showStatus('QR code copied to clipboard!', 'success');
+            } else {
+              const errorMsg = response ? response.error : 'Unknown error';
+              console.error('Failed to copy QR code to clipboard:', errorMsg);
+              showStatus('Failed to copy QR code to clipboard: ' + errorMsg, 'error');
+            }
+          }
+        );
       }, 'image/png');
     } catch (error) {
-      console.error('Permission error:', error);
-      showStatus('Permission error: ' + error.message, 'error');
+      console.error('Error preparing image:', error);
+      showStatus('Error preparing image: ' + error.message, 'error');
     }
   }
   
