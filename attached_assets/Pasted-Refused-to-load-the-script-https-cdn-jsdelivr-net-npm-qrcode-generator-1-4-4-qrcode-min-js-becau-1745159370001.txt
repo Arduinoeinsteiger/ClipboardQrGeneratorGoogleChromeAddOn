@@ -1,0 +1,181 @@
+Refused to load the script 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js' because it violates the following Content Security Policy directive: "script-src 'self'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+Refused to load the script 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js' because it violates the following Content Security Policy directive: "script-src 'self' 'wasm-unsafe-eval' 'inline-speculation-rules' http://localhost:* http://127.0.0.1:*". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback.
+Failed to read clipboard: [object DOMException]
+Kontext
+popup.html
+Stacktrace
+popup.js:32 (readClipboard)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+document.addEventListener('DOMContentLoaded', function() {
+  const getQrButton = document.getElementById('get-qr');
+  const clipboardContentElement = document.getElementById('clipboard-content');
+  const qrCodeElement = document.getElementById('qr-code');
+  const statusMessageElement = document.getElementById('status-message');
+  
+  // Check clipboard content when popup opens
+  readClipboard();
+  
+  // Add event listener to the Get QR button
+  getQrButton.addEventListener('click', handleGetQr);
+  
+  // Function to read from clipboard
+  async function readClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      
+      if (text) {
+        clipboardContentElement.textContent = text.length > 100 
+          ? text.substring(0, 100) + '...' 
+          : text;
+        
+        // Store the full text in a data attribute for QR generation
+        clipboardContentElement.dataset.fullText = text;
+        
+        showStatus('Clipboard content loaded successfully.', 'success');
+      } else {
+        clipboardContentElement.textContent = 'No text content in clipboard';
+        showStatus('No text content found in clipboard.', 'error');
+      }
+    } catch (error) {
+      console.error('Failed to read clipboard:', error);
+      clipboardContentElement.textContent = 'Could not access clipboard';
+      showStatus('Failed to access clipboard. Please check permissions.', 'error');
+    }
+  }
+  
+  // Function to handle Get QR button click
+  async function handleGetQr() {
+    const clipboardText = clipboardContentElement.dataset.fullText;
